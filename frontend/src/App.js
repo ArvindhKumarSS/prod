@@ -6,7 +6,7 @@ function App() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axios.get('http://ec2-3-88-187-66.compute-1.amazonaws.com:3001/api')
+    axios.get('http://ec2-18-212-85-59.compute-1.amazonaws.com:3001/api')
       .then(res => setData(res.data))
       .catch(err => console.error(err));
   }, []);
