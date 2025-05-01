@@ -1,0 +1,64 @@
+name: Deploy to EC2
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+    - name: Build, Tag, and Push Backend Image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: prod-backend
+        IMAGE_TAG: latest
+      run: |
+        cd backend
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Build, Tag, and Push Frontend Image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: prod-frontend
+        IMAGE_TAG: latest
+      run: |
+        cd frontend
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Deploy to EC2
+      env:
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USER: ec2-user
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > private_key
+        chmod 600 private_key
+        ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          docker stop backend || true
+          docker rm backend || true
+          docker run -d -p 3001:3001 --name backend \
+            -e DB_USER=postgres \
+            -e DB_HOST=prod-db.xxxx.us-east-1.rds.amazonaws.com \
+            -e DB_NAME=mydb \
+            -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            -e DB_PORT=5432 \
+            -e PORT=3001 \
+            $ECR_REGISTRY/prod-backend:latest
+          docker stop frontend || true
+          docker rm frontend || true
+          docker run -d -p 80:80 --name frontend \
+            $ECR_REGISTRY/prod-frontend:latest
+        EOF
+        rm private_key
