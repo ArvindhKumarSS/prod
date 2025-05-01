@@ -14,7 +14,7 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>My Full-Stack App</h1>
+        <h1>Degen Monk</h1>
         {data ? (
           <p>{data.message} - Server Time: {data.time}</p>
         ) : (
