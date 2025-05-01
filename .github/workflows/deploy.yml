@@ -45,20 +45,27 @@ jobs:
         echo "$SSH_PRIVATE_KEY" > private_key
         chmod 600 private_key
         ssh -o StrictHostKeyChecking=no -i private_key $EC2_USER@$EC2_HOST << 'EOF'
+          # Clear any existing Docker credentials
+          rm -f ~/.docker/config.json
+          # Authenticate with ECR
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          # Pre-pull images to avoid runtime pulls
+          docker pull $ECR_REGISTRY/myapp-backend:latest
+          docker pull $ECR_REGISTRY/myapp-frontend:latest
+          # Stop and remove existing containers
           docker stop backend || true
           docker rm backend || true
           docker run -d -p 3001:3001 --name backend \
             -e DB_USER=postgres \
-            -e DB_HOST=myapp-db.ce560iaoo0s7.us-east-1.rds.amazonaws.com \
-            -e DB_NAME=myapp-db \
+            -e DB_HOST=myapp-db.xxxx.us-east-1.rds.amazonaws.com \
+            -e DB_NAME=mydb \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e DB_PORT=5432 \
             -e PORT=3001 \
-            $ECR_REGISTRY/prod-backend:latest
+            $ECR_REGISTRY/myapp-backend:latest
           docker stop frontend || true
           docker rm frontend || true
           docker run -d -p 80:80 --name frontend \
-            $ECR_REGISTRY/prod-frontend:latest
+            $ECR_REGISTRY/myapp-frontend:latest
         EOF
         rm private_key
