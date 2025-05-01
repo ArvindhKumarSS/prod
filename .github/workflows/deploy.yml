@@ -19,28 +19,28 @@ jobs:
       uses: aws-actions/amazon-ecr-login@v1
     - name: Build, Tag, and Push Backend Image
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REGISTRY: 307946674359.dkr.ecr.us-east-1.amazonaws.com
         ECR_REPOSITORY: prod-backend
         IMAGE_TAG: latest
       run: |
         cd backend
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker build -t 307946674359.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push 307946674359.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
     - name: Build, Tag, and Push Frontend Image
       env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REGISTRY: 307946674359.dkr.ecr.us-east-1.amazonaws.com
         ECR_REPOSITORY: prod-frontend
         IMAGE_TAG: latest
       run: |
         cd frontend
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        docker build -t 307946674359.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push 307946674359.dkr.ecr.us-east-1.amazonaws.com/$ECR_REPOSITORY:$IMAGE_TAG
     - name: Deploy to EC2
       env:
         EC2_HOST: ${{ secrets.EC2_HOST }}
         EC2_USER: ec2-user
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REGISTRY: 307946674359.dkr.ecr.us-east-1.amazonaws.com
       run: |
         echo "$SSH_PRIVATE_KEY" > private_key
         chmod 600 private_key
@@ -59,9 +59,9 @@ jobs:
           echo "Docker info:"
           docker info --format '{{.RegistryConfig}}'
           echo "Pulling backend image:"
-          docker pull $ECR_REGISTRY/prod-backend:latest || echo "Backend pull failed"
+          docker pull 307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-backend:latest || echo "Backend pull failed"
           echo "Pulling frontend image:"
-          docker pull $ECR_REGISTRY/prod-frontend:latest || echo "Frontend pull failed"
+          docker pull 307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-frontend:latest || echo "Frontend pull failed"
           echo "Stopping and removing backend container:"
           docker stop backend || true
           docker rm backend || true
@@ -73,13 +73,13 @@ jobs:
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e DB_PORT=5432 \
             -e PORT=3001 \
-            $ECR_REGISTRY/prod-backend:latest || echo "Backend run failed"
+            307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-backend:latest || echo "Backend run failed"
           echo "Stopping and removing frontend container:"
           docker stop frontend || true
           docker rm frontend || true
           echo "Running frontend container:"
           docker run -d -p 80:80 --name frontend \
-            $ECR_REGISTRY/prod-frontend:latest || echo "Frontend run failed"
+            307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-frontend:latest || echo "Frontend run failed"
           echo "Listing running containers:"
           docker ps
         EOF
