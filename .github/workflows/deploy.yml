@@ -53,7 +53,7 @@ jobs:
           echo "Clearing Docker config:"
           rm -f ~/.docker/config.json
           echo "Logging into ECR:"
-          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $ECR_REGISTRY || echo "ECR login failed"
+          aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 307946674359.dkr.ecr.us-east-1.amazonaws.com || echo "ECR login failed"
           echo "Docker config after login:"
           cat ~/.docker/config.json || echo "No Docker config file"
           echo "Docker info:"
