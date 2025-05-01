@@ -50,8 +50,8 @@ jobs:
           docker rm backend || true
           docker run -d -p 3001:3001 --name backend \
             -e DB_USER=postgres \
-            -e DB_HOST=prod-db.xxxx.us-east-1.rds.amazonaws.com \
-            -e DB_NAME=mydb \
+            -e DB_HOST=myapp-db.ce560iaoo0s7.us-east-1.rds.amazonaws.com \
+            -e DB_NAME=myapp-db \
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e DB_PORT=5432 \
             -e PORT=3001 \
