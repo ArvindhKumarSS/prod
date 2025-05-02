@@ -8,7 +8,7 @@ function App() {
   const getApiUrl = () => {
     const protocol = window.location.protocol;
     const hostname = window.location.hostname;
-    return `${protocol}//${hostname}:3001/api`;
+    return `${protocol}//${hostname}/api`;
   };
 
   useEffect(() => {
