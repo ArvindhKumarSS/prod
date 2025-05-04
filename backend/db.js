@@ -2,8 +2,13 @@ const { Pool } = require('pg');
 const dotenv = require('dotenv');
 const path = require('path');
 
-// Load environment variables from .env file
-dotenv.config({ path: path.join(__dirname, '.env') });
+// Try to load .env file if it exists (development)
+try {
+    dotenv.config({ path: path.join(__dirname, '.env') });
+} catch (error) {
+    // Ignore error if .env file doesn't exist (production)
+    console.log('No .env file found, using environment variables');
+}
 
 // Validate required environment variables
 const requiredEnvVars = ['DB_USER', 'DB_HOST', 'DB_NAME', 'DB_PASSWORD', 'DB_PORT'];
