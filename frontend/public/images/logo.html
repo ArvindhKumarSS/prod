@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 512px;
+            height: 512px;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        }
+        .logo {
+            position: relative;
+            width: 480px;
+            height: 480px;
+        }
+        .outer-circle {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 8px solid #ffd700;
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+        .inner-circle {
+            position: absolute;
+            top: 40px;
+            left: 40px;
+            width: calc(100% - 80px);
+            height: calc(100% - 80px);
+            border: 4px solid #4ecdc4;
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+        .monk-symbol {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            color: #ffd700;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+        }
+        .crypto-symbols {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 60px;
+            box-sizing: border-box;
+        }
+        .crypto-symbol {
+            font-size: 60px;
+            color: #ffd700;
+            text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <div class="outer-circle"></div>
+        <div class="inner-circle"></div>
+        <div class="monk-symbol">☸</div>
+        <div class="crypto-symbols">
+            <span class="crypto-symbol">₿</span>
+            <span class="crypto-symbol">Ξ</span>
+        </div>
+    </div>
+</body>
+</html> 

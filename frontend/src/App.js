@@ -1,37 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import SEO from './components/SEO';
 import './App.css';
 
 function App() {
   const [data, setData] = useState(null);
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0);
-
-  const quotes = [
-    {
-      text: "In the monastery of markets,\nThe wise monk knows:\nWhen others FOMO,\nThat's when you HODL.",
-      author: "The Degen Sutra"
-    },
-    {
-      text: "A monk's patience is measured in blocks,\nNot in minutes.\nFor in the blockchain,\nTime is but a sequence of hashes.",
-      author: "The Crypto Dharma"
-    },
-    {
-      text: "The path to enlightenment\nIs paved with private keys.\nGuard them well,\nFor they are your digital soul.",
-      author: "The Digital Bodhisattva"
-    },
-    {
-      text: "In the garden of tokens,\nThe wise monk plants seeds of utility.\nFor value grows not from hype,\nBut from purpose.",
-      author: "The Token Master"
-    },
-    {
-      text: "When the market meditates,\nThe degen monk trades.\nWhen the market trades,\nThe degen monk meditates.",
-      author: "The Market Zen"
-    },
-    {
-      text: "The greatest wealth is not in your wallet,\nBut in your ability to HODL\nThrough the winter of bear markets.",
-      author: "The Winter Monk"
-    }
-  ];
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const getApiUrl = () => {
     const protocol = window.location.protocol;
@@ -43,86 +19,129 @@ function App() {
     const apiUrl = getApiUrl();
     console.log('Connecting to backend at:', apiUrl);
     
-    axios.get(apiUrl)
-      .then(res => setData(res.data))
+    // Fetch quotes
+    axios.get(`${apiUrl}/quotes`)
+      .then(res => {
+        setQuotes(res.data);
+        setLoading(false);
+      })
       .catch(err => {
-        console.error('Error connecting to backend:', err);
-        setData({ message: 'Error connecting to backend', time: new Date().toISOString() });
+        console.error('Error fetching quotes:', err);
+        setLoading(false);
       });
   }, []);
 
   useEffect(() => {
-    const quoteInterval = setInterval(() => {
-      setCurrentQuoteIndex((prevIndex) => (prevIndex + 1) % quotes.length);
-    }, 8000); // Change quote every 8 seconds
+    if (quotes.length > 0) {
+      const quoteInterval = setInterval(() => {
+        setCurrentQuoteIndex((prevIndex) => (prevIndex + 1) % quotes.length);
+      }, 8000); // Change quote every 8 seconds
 
-    return () => clearInterval(quoteInterval);
-  }, []);
+      return () => clearInterval(quoteInterval);
+    }
+  }, [quotes]);
 
   return (
     <div className="App">
-      <div className="hero-section">
+      <SEO />
+      
+      <header className="hero-section">
         <div className="logo-container">
-          <div className="monk-symbol">☸</div>
+          <div className="monk-symbol" aria-label="Degen Monk Symbol">☸</div>
           <h1 className="title">
             <span className="degen">DEGEN</span>
             <span className="monk">MONK</span>
           </h1>
         </div>
         <p className="tagline">Where Enlightenment Meets the Digital Age</p>
-      </div>
+      </header>
 
-      <div className="content-section">
-        <div className="quote-container">
+      <main className="content-section">
+        <section className="quote-container" aria-label="Daily Crypto Wisdom">
           <div className="quote-content">
-            {quotes.map((quote, index) => (
-              <div
-                key={index}
-                className={`quote-slide ${index === currentQuoteIndex ? 'active' : ''}`}
-              >
-                <p className="quote-text">
-                  {quote.text.split('\n').map((line, i) => (
-                    <React.Fragment key={i}>
-                      {line}
-                      <br />
-                    </React.Fragment>
-                  ))}
-                </p>
-                <p className="quote-author">- {quote.author}</p>
+            {loading ? (
+              <div className="loading">
+                <div className="spinner"></div>
+                <p>Loading wisdom from the digital monastery...</p>
               </div>
-            ))}
+            ) : quotes.length > 0 ? (
+              quotes.map((quote, index) => (
+                <div
+                  key={quote.id}
+                  className={`quote-slide ${index === currentQuoteIndex ? 'active' : ''}`}
+                  role="article"
+                  aria-hidden={index !== currentQuoteIndex}
+                >
+                  <blockquote className="quote-text">
+                    {quote.text.split('\n').map((line, i) => (
+                      <React.Fragment key={i}>
+                        {line}
+                        <br />
+                      </React.Fragment>
+                    ))}
+                  </blockquote>
+                  <footer className="quote-author">- {quote.author}</footer>
+                </div>
+              ))
+            ) : (
+              <p className="quote-text">No wisdom available at the moment.</p>
+            )}
           </div>
-          <div className="quote-decoration">
+          <div className="quote-decoration" aria-hidden="true">
             <span className="crypto-symbol">₿</span>
             <span className="zen-symbol">☸</span>
             <span className="crypto-symbol">Ξ</span>
           </div>
-          <div className="quote-dots">
-            {quotes.map((_, index) => (
-              <span
-                key={index}
-                className={`dot ${index === currentQuoteIndex ? 'active' : ''}`}
-                onClick={() => setCurrentQuoteIndex(index)}
-              />
-            ))}
-          </div>
-        </div>
-        
-        <div className="backend-status">
-          <h2>Backend Connection Status</h2>
-          {data ? (
-            <div className="status-message">
-              <p className="message">{data.message}</p>
-              <p className="time">Server Time: {data.time}</p>
-            </div>
-          ) : (
-            <div className="loading">
-              <div className="spinner"></div>
-              <p>Connecting to the digital monastery...</p>
-            </div>
+          {quotes.length > 0 && (
+            <nav className="quote-dots" aria-label="Quote navigation">
+              {quotes.map((_, index) => (
+                <button
+                  key={index}
+                  className={`dot ${index === currentQuoteIndex ? 'active' : ''}`}
+                  onClick={() => setCurrentQuoteIndex(index)}
+                  aria-label={`View quote ${index + 1}`}
+                  aria-pressed={index === currentQuoteIndex}
+                />
+              ))}
+            </nav>
           )}
-        </div>
-      </div>
+        </section>
+        
+        <section className="comic-strip" aria-label="The Degen Chronicles">
+          <h2>The Degen Chronicles</h2>
+          <div className="comic-panels">
+            <article className="comic-panel">
+              <div className="character a">Hey, check out this new token!</div>
+              <div className="character b">Hmm, looks interesting...</div>
+            </article>
+            <article className="comic-panel">
+              <div className="price-chart up" aria-label="Price going up">📈</div>
+              <div className="character b">Wow, it's up 100%!</div>
+            </article>
+            <article className="comic-panel">
+              <div className="price-chart up-more" aria-label="Price going up more">📈📈</div>
+              <div className="character b">I'll wait for a pullback...</div>
+            </article>
+            <article className="comic-panel">
+              <div className="price-chart up-most" aria-label="Price going up most">📈📈📈</div>
+              <div className="character b">Okay, I'm in!</div>
+            </article>
+            <article className="comic-panel">
+              <div className="character a">Thanks for the exit liquidity! 😈</div>
+              <div className="price-chart crash" aria-label="Price crashing">📉📉📉</div>
+            </article>
+          </div>
+        </section>
+      </main>
+
+      <footer className="site-footer">
+        <p>&copy; {new Date().getFullYear()} Degen Monk. All rights reserved.</p>
+        <nav aria-label="Social media links">
+          <a href="https://twitter.com/degenmonk" target="_blank" rel="noopener noreferrer">Twitter</a>
+          <a href="https://t.me/degenmonk" target="_blank" rel="noopener noreferrer">Telegram</a>
+          <a href="https://discord.gg/degenmonk" target="_blank" rel="noopener noreferrer">Discord</a>
+        </nav>
+      </footer>
     </div>
   );
 }
