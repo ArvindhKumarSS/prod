@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import ogImage from '../../public/images/og-image.png';
-import logoImage from '../../public/images/logo.png';
+import ogImage from '../images/og-image.png';
+import logoImage from '../images/logo.png';
 
 const SEO = ({ title, description, image, url }) => {
     const defaultTitle = "Degen Monk - Where Crypto Meets Enlightenment";
