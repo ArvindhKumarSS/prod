@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import SEO from './components/SEO';
+import ComicStrip from './components/ComicStrip';
 import './App.css';
 
 function App() {
@@ -107,31 +108,7 @@ function App() {
           )}
         </section>
         
-        <section className="comic-strip" aria-label="The Degen Chronicles">
-          <h2>The Degen Chronicles</h2>
-          <div className="comic-panels">
-            <article className="comic-panel">
-              <div className="character a">Hey, check out this new token!</div>
-              <div className="character b">Hmm, looks interesting...</div>
-            </article>
-            <article className="comic-panel">
-              <div className="price-chart up" aria-label="Price going up">📈</div>
-              <div className="character b">Wow, it's up 100%!</div>
-            </article>
-            <article className="comic-panel">
-              <div className="price-chart up-more" aria-label="Price going up more">📈📈</div>
-              <div className="character b">I'll wait for a pullback...</div>
-            </article>
-            <article className="comic-panel">
-              <div className="price-chart up-most" aria-label="Price going up most">📈📈📈</div>
-              <div className="character b">Okay, I'm in!</div>
-            </article>
-            <article className="comic-panel">
-              <div className="character a">Thanks for the exit liquidity! 😈</div>
-              <div className="price-chart crash" aria-label="Price crashing">📉📉📉</div>
-            </article>
-          </div>
-        </section>
+        <ComicStrip />
       </main>
 
       <footer className="site-footer">

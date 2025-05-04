@@ -1,0 +1,100 @@
+.comic-strip {
+  padding: 2rem;
+  background: #1a1a1a;
+  border-radius: 10px;
+  margin: 2rem 0;
+}
+
+.comic-strip h2 {
+  color: #FFD700;
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 2rem;
+}
+
+.comic-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.comic-panel {
+  background: #2d2d2d;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.comic-panel:hover {
+  transform: translateY(-5px);
+}
+
+.comic-panel img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.panel-dialogue {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dialogue-bubble {
+  padding: 1rem;
+  border-radius: 12px;
+  max-width: 80%;
+  position: relative;
+}
+
+.dialogue-bubble.monk {
+  background: #e3f2fd;
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+
+.dialogue-bubble.novice {
+  background: #f5f5f5;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+
+.character-name {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+}
+
+.dialogue-bubble p {
+  margin: 0;
+  line-height: 1.5;
+  color: #444;
+}
+
+@media (max-width: 768px) {
+  .comic-strip {
+    padding: 1rem;
+  }
+
+  .comic-strip h2 {
+    font-size: 1.5rem;
+  }
+
+  .comic-panels {
+    gap: 1rem;
+  }
+
+  .panel-image {
+    height: 200px;
+  }
+
+  .dialogue-bubble {
+    max-width: 90%;
+  }
+} 

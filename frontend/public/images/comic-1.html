@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            width: 800px;
+            height: 600px;
+            background: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+        .panel {
+            width: 700px;
+            height: 500px;
+            background: #2d2d2d;
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .table {
+            position: absolute;
+            bottom: 50px;
+            left: 50px;
+            right: 50px;
+            height: 50px;
+            background: #4a4a4a;
+            border-radius: 5px;
+        }
+        .coffee-cup {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: #8B4513;
+            border-radius: 50%;
+        }
+        .coffee-cup.left {
+            left: 150px;
+            bottom: 100px;
+        }
+        .coffee-cup.right {
+            right: 150px;
+            bottom: 100px;
+        }
+        .character {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+        }
+        .character.left {
+            left: 150px;
+            bottom: 200px;
+            background: #FFD700;
+        }
+        .character.right {
+            right: 150px;
+            bottom: 200px;
+            background: #4169E1;
+        }
+        .dialogue {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 20px;
+            max-width: 200px;
+            text-align: center;
+        }
+        .dialogue.left {
+            left: 100px;
+            top: 100px;
+        }
+        .dialogue.right {
+            right: 100px;
+            top: 100px;
+        }
+    </style>
+</head>
+<body>
+    <div class="panel">
+        <div class="table"></div>
+        <div class="coffee-cup left"></div>
+        <div class="coffee-cup right"></div>
+        <div class="character left"></div>
+        <div class="character right"></div>
+        <div class="dialogue left">Check out this new token!</div>
+        <div class="dialogue right">Hmm, looks interesting...</div>
+    </div>
+</body>
+</html> 
