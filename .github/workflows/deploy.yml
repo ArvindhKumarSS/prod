@@ -17,6 +17,9 @@ jobs:
     - name: Login to Amazon ECR
       id: login-ecr
       uses: aws-actions/amazon-ecr-login@v1
+    - name: Create ECR Repository if not exists
+      run: |
+        aws ecr describe-repositories --repository-names prod-mcp || aws ecr create-repository --repository-name prod-mcp
     - name: Build, Tag, and Push Backend Image
       env:
         ECR_REGISTRY: 307946674359.dkr.ecr.us-east-1.amazonaws.com
