@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Degen Monk MCP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        .card {
+            background: #2d2d2d;
+            border: none;
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background: #3d3d3d;
+            color: #FFD700;
+            border-bottom: none;
+        }
+        .table {
+            color: #fff;
+        }
+        .table td, .table th {
+            border-color: #3d3d3d;
+        }
+        .stats-card {
+            background: #2d2d2d;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .stats-value {
+            font-size: 24px;
+            color: #FFD700;
+        }
+        .stats-label {
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Degen Monk MCP</h1>
+        
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="quotesCount">-</div>
+                    <div class="stats-label">Quotes</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="visitorsCount">-</div>
+                    <div class="stats-label">Visitors</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="eventsCount">-</div>
+                    <div class="stats-label">Events</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <div class="stats-value" id="latestVisitor">-</div>
+                    <div class="stats-label">Latest Visitor</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">PostgreSQL Metrics</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Performance Metrics</h6>
+                                <div class="table-responsive">
+                                    <table class="table" id="performanceTable">
+                                        <tbody>
+                                            <tr>
+                                                <td>Active Connections</td>
+                                                <td id="activeConnections">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Transactions Committed</td>
+                                                <td id="transactionsCommitted">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Transactions Rolled Back</td>
+                                                <td id="transactionsRolledBack">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Blocks Read</td>
+                                                <td id="blocksRead">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Blocks Hit</td>
+                                                <td id="blocksHit">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Connection Pool Status</h6>
+                                <div class="table-responsive">
+                                    <table class="table" id="poolTable">
+                                        <tbody>
+                                            <tr>
+                                                <td>Total Connections</td>
+                                                <td id="totalConnections">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Idle Connections</td>
+                                                <td id="idleConnections">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Waiting Connections</td>
+                                                <td id="waitingConnections">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Max Connections</td>
+                                                <td id="maxConnections">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Min Connections</td>
+                                                <td id="minConnections">-</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h6>Table Statistics</h6>
+                                <div class="table-responsive">
+                                    <table class="table" id="tablesTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Table</th>
+                                                <th>Row Count</th>
+                                                <th>Dead Rows</th>
+                                                <th>Last Vacuum</th>
+                                                <th>Last Analyze</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-md-12">
+                                <h6>Slow Queries (Last Hour)</h6>
+                                <div class="table-responsive">
+                                    <table class="table" id="slowQueriesTable">
+                                        <thead>
+                                            <tr>
+                                                <th>Query</th>
+                                                <th>Calls</th>
+                                                <th>Mean Time (ms)</th>
+                                                <th>Total Time (ms)</th>
+                                                <th>Rows</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">AI-Powered Query Interface</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <form id="naturalQueryForm">
+                                <div class="mb-3">
+                                    <label for="naturalQuery" class="form-label">Ask a question about your data</label>
+                                    <textarea class="form-control" id="naturalQuery" rows="3" 
+                                        placeholder="Example: Show me the most active visitors in the last 24 hours"></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="queryContext" class="form-label">Additional Context (optional)</label>
+                                    <textarea class="form-control" id="queryContext" rows="2" 
+                                        placeholder="Example: Focus on visitors from the US"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Ask AI</button>
+                            </form>
+                        </div>
+
+                        <div id="queryResults" style="display: none;">
+                            <div class="mb-4">
+                                <h6>Generated SQL</h6>
+                                <pre class="bg-dark text-light p-3 rounded"><code id="generatedSQL"></code></pre>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6>AI Explanation</h6>
+                                <div id="queryExplanation" class="bg-dark text-light p-3 rounded"></div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h6>Results</h6>
+                                <div class="table-responsive">
+                                    <table class="table" id="queryResultsTable">
+                                        <thead></thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                                <div id="resultCount" class="text-muted mt-2"></div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <h6>Recent Queries</h6>
+                            <div class="table-responsive">
+                                <table class="table" id="queryHistoryTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Query</th>
+                                            <th>Time</th>
+                                            <th>Rows</th>
+                                            <th>Duration</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Quotes Management</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="quoteForm" class="mb-3">
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="quoteText" placeholder="Quote text" required>
+                            </div>
+                            <div class="mb-3">
+                                <input type="text" class="form-control" id="quoteAuthor" placeholder="Author" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Quote</button>
+                        </form>
+                        <div class="table-responsive">
+                            <table class="table" id="quotesTable">
+                                <thead>
+                                    <tr>
+                                        <th>Text</th>
+                                        <th>Author</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Visitors</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table" id="visitorsTable">
+                                <thead>
+                                    <tr>
+                                        <th>IP</th>
+                                        <th>Events</th>
+                                        <th>Last Event</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch and display stats
+        async function updateStats() {
+            try {
+                const response = await fetch('/stats');
+                const stats = await response.json();
+                
+                document.getElementById('quotesCount').textContent = stats.quotes_count;
+                document.getElementById('visitorsCount').textContent = stats.visitors_count;
+                document.getElementById('eventsCount').textContent = stats.events_count;
+                document.getElementById('latestVisitor').textContent = new Date(stats.latest_visitor).toLocaleString();
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        }
+
+        // Fetch and display quotes
+        async function updateQuotes() {
+            try {
+                const response = await fetch('/quotes');
+                const quotes = await response.json();
+                
+                const tbody = document.querySelector('#quotesTable tbody');
+                tbody.innerHTML = quotes.map(quote => `
+                    <tr>
+                        <td>${quote.text}</td>
+                        <td>${quote.author}</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteQuote(${quote.id})">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error fetching quotes:', error);
+            }
+        }
+
+        // Fetch and display visitors
+        async function updateVisitors() {
+            try {
+                const response = await fetch('/visitors');
+                const visitors = await response.json();
+                
+                const tbody = document.querySelector('#visitorsTable tbody');
+                tbody.innerHTML = visitors.map(visitor => `
+                    <tr>
+                        <td>${visitor.ip_address}</td>
+                        <td>${visitor.event_count}</td>
+                        <td>${new Date(visitor.last_event).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error fetching visitors:', error);
+            }
+        }
+
+        // Fetch and display PostgreSQL metrics
+        async function updateMetrics() {
+            try {
+                // Performance metrics
+                const perfResponse = await fetch('/metrics/performance');
+                const perfMetrics = await perfResponse.json();
+                
+                document.getElementById('activeConnections').textContent = perfMetrics.active_connections;
+                document.getElementById('transactionsCommitted').textContent = perfMetrics.transactions_committed;
+                document.getElementById('transactionsRolledBack').textContent = perfMetrics.transactions_rolled_back;
+                document.getElementById('blocksRead').textContent = perfMetrics.blocks_read;
+                document.getElementById('blocksHit').textContent = perfMetrics.blocks_hit;
+
+                // Pool status
+                const poolResponse = await fetch('/metrics/pool');
+                const poolMetrics = await poolResponse.json();
+                
+                document.getElementById('totalConnections').textContent = poolMetrics.totalCount;
+                document.getElementById('idleConnections').textContent = poolMetrics.idleCount;
+                document.getElementById('waitingConnections').textContent = poolMetrics.waitingCount;
+                document.getElementById('maxConnections').textContent = poolMetrics.max;
+                document.getElementById('minConnections').textContent = poolMetrics.min;
+
+                // Table statistics
+                const tablesResponse = await fetch('/metrics/tables');
+                const tables = await tablesResponse.json();
+                
+                const tablesBody = document.querySelector('#tablesTable tbody');
+                tablesBody.innerHTML = tables.map(table => `
+                    <tr>
+                        <td>${table.table_name}</td>
+                        <td>${table.row_count}</td>
+                        <td>${table.dead_rows}</td>
+                        <td>${table.last_vacuum ? new Date(table.last_vacuum).toLocaleString() : 'Never'}</td>
+                        <td>${table.last_analyze ? new Date(table.last_analyze).toLocaleString() : 'Never'}</td>
+                    </tr>
+                `).join('');
+
+                // Slow queries
+                const slowQueriesResponse = await fetch('/metrics/slow-queries');
+                const slowQueries = await slowQueriesResponse.json();
+                
+                const slowQueriesBody = document.querySelector('#slowQueriesTable tbody');
+                slowQueriesBody.innerHTML = slowQueries.map(query => `
+                    <tr>
+                        <td><code>${query.query.substring(0, 100)}${query.query.length > 100 ? '...' : ''}</code></td>
+                        <td>${query.calls}</td>
+                        <td>${Math.round(query.mean_time)}</td>
+                        <td>${Math.round(query.total_time)}</td>
+                        <td>${query.rows}</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error fetching metrics:', error);
+            }
+        }
+
+        // Add new quote
+        document.getElementById('quoteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('quoteText').value;
+            const author = document.getElementById('quoteAuthor').value;
+
+            try {
+                await fetch('/quotes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text, author })
+                });
+                
+                document.getElementById('quoteForm').reset();
+                updateQuotes();
+                updateStats();
+            } catch (error) {
+                console.error('Error adding quote:', error);
+            }
+        });
+
+        // Delete quote
+        async function deleteQuote(id) {
+            if (!confirm('Are you sure you want to delete this quote?')) return;
+
+            try {
+                await fetch(`/quotes/${id}`, { method: 'DELETE' });
+                updateQuotes();
+                updateStats();
+            } catch (error) {
+                console.error('Error deleting quote:', error);
+            }
+        }
+
+        // Handle natural language queries
+        document.getElementById('naturalQueryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = document.getElementById('naturalQuery').value;
+            const context = document.getElementById('queryContext').value;
+
+            try {
+                const response = await fetch('/query/natural', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, context })
+                });
+
+                const data = await response.json();
+                
+                // Show results section
+                document.getElementById('queryResults').style.display = 'block';
+                
+                // Display generated SQL
+                document.getElementById('generatedSQL').textContent = data.query;
+                
+                // Display AI explanation
+                document.getElementById('queryExplanation').innerHTML = marked.parse(data.explanation);
+                
+                // Display results
+                const table = document.getElementById('queryResultsTable');
+                const thead = table.querySelector('thead');
+                const tbody = table.querySelector('tbody');
+                
+                // Clear previous results
+                thead.innerHTML = '';
+                tbody.innerHTML = '';
+                
+                if (data.results.length > 0) {
+                    // Create header
+                    const headerRow = document.createElement('tr');
+                    Object.keys(data.results[0]).forEach(key => {
+                        const th = document.createElement('th');
+                        th.textContent = key;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    
+                    // Create rows
+                    data.results.forEach(row => {
+                        const tr = document.createElement('tr');
+                        Object.values(row).forEach(value => {
+                            const td = document.createElement('td');
+                            td.textContent = value === null ? 'NULL' : value;
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+                }
+                
+                // Display row count
+                document.getElementById('resultCount').textContent = 
+                    `Showing ${data.results.length} of ${data.rowCount} rows`;
+                
+                // Update query history
+                updateQueryHistory();
+            } catch (error) {
+                console.error('Error executing query:', error);
+                alert('Error executing query: ' + error.message);
+            }
+        });
+
+        // Update query history
+        async function updateQueryHistory() {
+            try {
+                const response = await fetch('/query/history');
+                const history = await response.json();
+                
+                const tbody = document.querySelector('#queryHistoryTable tbody');
+                tbody.innerHTML = history.map(entry => `
+                    <tr>
+                        <td><code>${entry.natural_query || entry.query.substring(0, 50)}${entry.query.length > 50 ? '...' : ''}</code></td>
+                        <td>${new Date(entry.created_at).toLocaleString()}</td>
+                        <td>${entry.row_count}</td>
+                        <td>${entry.execution_time}ms</td>
+                    </tr>
+                `).join('');
+            } catch (error) {
+                console.error('Error fetching query history:', error);
+            }
+        }
+
+        // Initial load
+        updateStats();
+        updateQuotes();
+        updateVisitors();
+        updateMetrics();
+        updateQueryHistory();
+
+        // Refresh data every 30 seconds
+        setInterval(() => {
+            updateStats();
+            updateQuotes();
+            updateVisitors();
+            updateMetrics();
+            updateQueryHistory();
+        }, 30000);
+    </script>
+
+    <!-- Add marked.js for markdown rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</body>
+</html> 
