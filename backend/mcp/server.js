@@ -17,7 +17,7 @@ const openai = new OpenAI({
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'public')));
 
 // Basic authentication middleware
 app.use(basicAuth({
@@ -334,6 +334,12 @@ app.get('/query/history', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch query history' });
     }
 });
+
+// Serve static files at /mcp (so /mcp/* is handled by static middleware)
+app.use('/mcp', express.static(path.join(__dirname, 'public')));
+
+// Serve index.html at /mcp (instead of a catch-all route)
+app.get('/mcp', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
 
 // Start server
 app.listen(PORT, () => {
