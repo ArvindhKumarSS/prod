@@ -71,6 +71,11 @@ const MathAI = () => {
 
     return (
         <div className="math-ai-container">
+            <div className="math-symbol">∞</div>
+            <div className="math-symbol">∫</div>
+            <div className="math-symbol">∑</div>
+            <div className="math-symbol">π</div>
+
             <div className="math-header">
                 <h1>Math AI Assistant</h1>
                 <p className="subtitle">Your personal mathematics tutor</p>
@@ -109,6 +114,10 @@ const MathAI = () => {
                         {renderMath(solution)}
                     </div>
                 </div>
+            )}
+
+            {loading && (
+                <div className="math-ai-loading">∞</div>
             )}
         </div>
     );
