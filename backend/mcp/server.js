@@ -18,24 +18,24 @@ const openai = new OpenAI({
 app.use(cors());
 app.use(express.json());
 
-// Basic authentication middleware
-app.use(basicAuth({
+// Serve static files first
+app.use('/mcp', express.static(path.join(__dirname, 'public')));
+
+// Basic authentication middleware for API routes only
+app.use('/mcp/api', basicAuth({
     users: { 
         [process.env.MCP_USERNAME || 'admin']: process.env.MCP_PASSWORD || 'changeme'
     },
     challenge: true,
-    realm: 'Degen Monk MCP'
+    realm: 'DegenMonkMCP'
 }));
 
-// Serve static files
-app.use('/mcp', express.static(path.join(__dirname, 'public')));
-
-// API Routes with /mcp prefix
-app.get('/mcp/health', (req, res) => {
+// API Routes with /mcp/api prefix
+app.get('/mcp/api/health', (req, res) => {
     res.json({ status: 'ok' });
 });
 
-app.get('/mcp/metrics/performance', async (req, res) => {
+app.get('/mcp/api/metrics/performance', async (req, res) => {
     try {
         const metrics = await pool.query(`
             SELECT 
@@ -60,7 +60,7 @@ app.get('/mcp/metrics/performance', async (req, res) => {
     }
 });
 
-app.get('/mcp/metrics/tables', async (req, res) => {
+app.get('/mcp/api/metrics/tables', async (req, res) => {
     try {
         const tables = await pool.query(`
             SELECT 
@@ -82,7 +82,7 @@ app.get('/mcp/metrics/tables', async (req, res) => {
     }
 });
 
-app.get('/mcp/metrics/pool', (req, res) => {
+app.get('/mcp/api/metrics/pool', (req, res) => {
     const poolStatus = {
         totalCount: pool.totalCount,
         idleCount: pool.idleCount,
@@ -93,7 +93,7 @@ app.get('/mcp/metrics/pool', (req, res) => {
     res.json(poolStatus);
 });
 
-app.get('/mcp/metrics/slow-queries', async (req, res) => {
+app.get('/mcp/api/metrics/slow-queries', async (req, res) => {
     try {
         const slowQueries = await pool.query(`
             SELECT 
@@ -115,7 +115,7 @@ app.get('/mcp/metrics/slow-queries', async (req, res) => {
     }
 });
 
-app.get('/mcp/stats', async (req, res) => {
+app.get('/mcp/api/stats', async (req, res) => {
     try {
         const stats = await pool.query(`
             SELECT 
@@ -132,7 +132,7 @@ app.get('/mcp/stats', async (req, res) => {
     }
 });
 
-app.get('/mcp/quotes', (req, res) => {
+app.get('/mcp/api/quotes', (req, res) => {
   const query = `
     SELECT id, text, author, created_at, updated_at FROM quotes ORDER BY RANDOM() LIMIT 10
   `;
@@ -146,7 +146,7 @@ app.get('/mcp/quotes', (req, res) => {
   });
 });
 
-app.post('/mcp/quotes', async (req, res) => {
+app.post('/mcp/api/quotes', async (req, res) => {
     const { text, author } = req.body;
     try {
         const result = await pool.query(
@@ -160,7 +160,7 @@ app.post('/mcp/quotes', async (req, res) => {
     }
 });
 
-app.delete('/mcp/quotes/:id', async (req, res) => {
+app.delete('/mcp/api/quotes/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM quotes WHERE id = $1', [req.params.id]);
         res.json({ message: 'Quote deleted successfully' });
@@ -170,7 +170,7 @@ app.delete('/mcp/quotes/:id', async (req, res) => {
     }
 });
 
-app.get('/mcp/visitorinfo', async (req, res) => {
+app.get('/mcp/api/visitorinfo', async (req, res) => {
     try {
         const visitors = await pool.query('SELECT ip_address, region, data, created_at FROM visitorinfo ORDER BY created_at DESC LIMIT 100');
         res.json(visitors.rows);
@@ -180,7 +180,7 @@ app.get('/mcp/visitorinfo', async (req, res) => {
     }
 });
 
-app.post('/mcp/visitorinfo', async (req, res) => {
+app.post('/mcp/api/visitorinfo', async (req, res) => {
     const { ip_address, region, data } = req.body;
     try {
         await pool.query(
@@ -194,7 +194,7 @@ app.post('/mcp/visitorinfo', async (req, res) => {
     }
 });
 
-app.get('/mcp/errorinfo', async (req, res) => {
+app.get('/mcp/api/errorinfo', async (req, res) => {
     try {
         const errors = await pool.query('SELECT route, error_message, stack_trace, created_at FROM errorinfo ORDER BY created_at DESC LIMIT 100');
         res.json(errors.rows);
@@ -204,7 +204,7 @@ app.get('/mcp/errorinfo', async (req, res) => {
     }
 });
 
-app.post('/mcp/errorinfo', async (req, res) => {
+app.post('/mcp/api/errorinfo', async (req, res) => {
     const { route, error_message, stack_trace } = req.body;
     try {
         await pool.query(
@@ -240,7 +240,7 @@ Tables in the database:
    - created_at (timestamp)
 `;
 
-app.post('/mcp/query/natural', async (req, res) => {
+app.post('/mcp/api/query/natural', async (req, res) => {
     const { query, context } = req.body;
     
     try {
@@ -323,7 +323,7 @@ app.post('/mcp/query/natural', async (req, res) => {
     }
 });
 
-app.get('/mcp/query/history', async (req, res) => {
+app.get('/mcp/api/query/history', async (req, res) => {
     try {
         const history = await pool.query(`
             SELECT 
