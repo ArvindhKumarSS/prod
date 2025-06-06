@@ -123,10 +123,10 @@ app.get('/stats', async (req, res) => {
         const stats = await pool.query(`
             SELECT 
                 (SELECT count(*) FROM quotes) as quotes_count,
-                (SELECT count(*) FROM visitors) as visitors_count,
-                (SELECT count(*) FROM visitor_events) as events_count,
+                (SELECT count(*) FROM visitorinfo) as visitors_count,
+                (SELECT count(*) FROM visitorinfo) as events_count,
                 (SELECT max(created_at) FROM quotes) as latest_quote,
-                (SELECT max(created_at) FROM visitors) as latest_visitor
+                (SELECT max(created_at) FROM visitorinfo) as latest_visitor
         `);
         res.json(stats.rows[0]);
     } catch (error) {
@@ -136,14 +136,18 @@ app.get('/stats', async (req, res) => {
 });
 
 // Quotes management endpoints
-app.get('/quotes', async (req, res) => {
-    try {
-        const quotes = await pool.query('SELECT * FROM quotes ORDER BY created_at DESC');
-        res.json(quotes.rows);
-    } catch (error) {
-        console.error('Error fetching quotes:', error);
-        res.status(500).json({ error: 'Failed to fetch quotes' });
+app.get('/quotes', (req, res) => {
+  const query = `
+    SELECT id, text, author, created_at, updated_at FROM quotes ORDER BY RANDOM() LIMIT 10
+  `;
+  pool.query(query, (err, result) => {
+    if (err) {
+      console.error('Error fetching quotes:', err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    } else {
+      res.json(result.rows);
     }
+  });
 });
 
 app.post('/quotes', async (req, res) => {
@@ -170,43 +174,57 @@ app.delete('/quotes/:id', async (req, res) => {
     }
 });
 
-// Visitor stats endpoints
-app.get('/visitors', async (req, res) => {
+// Visitor info endpoints (updated to match actual visitorinfo table schema: ip_address, region, data (json), created_at)
+app.get('/visitorinfo', async (req, res) => {
     try {
-        const visitors = await pool.query(`
-            SELECT v.*, 
-                   COUNT(ve.id) as event_count,
-                   MAX(ve.created_at) as last_event
-            FROM visitors v
-            LEFT JOIN visitor_events ve ON v.id = ve.visitor_id
-            GROUP BY v.id
-            ORDER BY v.created_at DESC
-            LIMIT 100
-        `);
+        const visitors = await pool.query('SELECT ip_address, region, data, created_at FROM visitorinfo ORDER BY created_at DESC LIMIT 100');
         res.json(visitors.rows);
     } catch (error) {
-        console.error('Error fetching visitors:', error);
-        res.status(500).json({ error: 'Failed to fetch visitors' });
+        console.error('Error fetching visitor info:', error);
+        res.status(500).json({ error: 'Failed to fetch visitor info' });
     }
 });
 
-app.get('/visitors/events', async (req, res) => {
+app.post('/visitorinfo', async (req, res) => {
+    const { ip_address, region, data } = req.body;
     try {
-        const events = await pool.query(`
-            SELECT ve.*, v.ip_address, v.user_agent
-            FROM visitor_events ve
-            JOIN visitors v ON ve.visitor_id = v.id
-            ORDER BY ve.created_at DESC
-            LIMIT 100
-        `);
-        res.json(events.rows);
+        await pool.query(
+            'INSERT INTO visitorinfo (ip_address, region, data, created_at) VALUES ($1, $2, $3, NOW())',
+            [ip_address, region, data]
+        );
+        res.status(201).json({ message: 'Visitor info inserted.' });
     } catch (error) {
-        console.error('Error fetching visitor events:', error);
-        res.status(500).json({ error: 'Failed to fetch visitor events' });
+        console.error('Error inserting visitor info:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 });
 
-// Database schema for AI context
+// Error info endpoints (updated to match actual errorinfo table schema: route, error_message, stack_trace, created_at)
+app.get('/errorinfo', async (req, res) => {
+    try {
+        const errors = await pool.query('SELECT route, error_message, stack_trace, created_at FROM errorinfo ORDER BY created_at DESC LIMIT 100');
+        res.json(errors.rows);
+    } catch (error) {
+        console.error('Error fetching error info:', error);
+        res.status(500).json({ error: 'Failed to fetch error info' });
+    }
+});
+
+app.post('/errorinfo', async (req, res) => {
+    const { route, error_message, stack_trace } = req.body;
+    try {
+        await pool.query(
+            'INSERT INTO errorinfo (route, error_message, stack_trace, created_at) VALUES ($1, $2, $3, NOW())',
+            [route, error_message, stack_trace]
+        );
+        res.status(201).json({ message: 'Error info inserted.' });
+    } catch (error) {
+        console.error('Error inserting error info:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+});
+
+// Database schema for AI context (updated to reflect actual errorinfo table schema)
 const DB_SCHEMA = `
 Tables in the database:
 1. quotes
@@ -214,21 +232,18 @@ Tables in the database:
    - text (text)
    - author (text)
    - created_at (timestamp)
-
-2. visitors
+2. visitorinfo
    - id (integer, primary key)
    - ip_address (text)
-   - user_agent (text)
+   - region (text)
+   - data (jsonb) (sample: { "ip": "::ffff:127.0.0.1", "browser": { "os": "Other 0.0.0", "major": "1", "minor": "25", "patch": "0", "family": "Wget" }, "headers": { "referer": null, "language": null }, "timestamp": "2025-05-04T13:14:00.161Z" })
    - created_at (timestamp)
-
-3. visitor_events
+3. errorinfo
    - id (integer, primary key)
-   - visitor_id (integer, foreign key to visitors.id)
-   - event_type (text)
+   - route (text)
+   - error_message (text)
+   - stack_trace (text)
    - created_at (timestamp)
-
-Relationships:
-- visitor_events.visitor_id references visitors.id
 `;
 
 // Natural language query endpoint
@@ -238,7 +253,7 @@ app.post('/query/natural', async (req, res) => {
     try {
         // Get AI to generate SQL
         const completion = await openai.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-3.5-turbo",
             messages: [
                 {
                     role: "system",
@@ -277,7 +292,7 @@ app.post('/query/natural', async (req, res) => {
 
         // Get AI to explain the results
         const explanation = await openai.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-3.5-turbo",
             messages: [
                 {
                     role: "system",
