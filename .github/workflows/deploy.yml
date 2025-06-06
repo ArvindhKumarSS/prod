@@ -70,8 +70,14 @@ jobs:
           cat ~/.docker/config.json || echo "No Docker config file"
           echo "Docker info:"
           docker info --format '{{.RegistryConfig}}'
+          echo "Cleaning up Docker system:"
+          docker system prune -af --volumes || true
+          echo "Checking disk space:"
+          df -h
           echo "Pulling backend image:"
-          docker pull 307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-backend:latest || echo "Backend pull failed"
+          docker pull 307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-backend:latest --no-cache || echo "Backend pull failed"
+          echo "Removing old backend image:"
+          docker rmi $(docker images '307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-backend' -q) || true
           echo "Pulling MCP image:"
           docker pull 307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-mcp:latest || echo "MCP pull failed"
           echo "Pulling frontend image:"
