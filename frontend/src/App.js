@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import SEO from './components/SEO';
 import ComicStrip from './components/ComicStrip';
+import MathAI from './components/MathAI';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import './App.css';
 
 function App() {
@@ -45,10 +47,10 @@ function App() {
     }
   }, [quotes]);
 
-  return (
-    <div className="App">
+  // Define a Home component (or inline the home page JSX) so that we can use Routes
+  const Home = () => (
+    <>
       <SEO />
-      
       <header className="hero-section">
         <div className="logo-container">
           <div className="monk-symbol" aria-label="Degen Monk Symbol">☸</div>
@@ -113,16 +115,27 @@ function App() {
         
         <ComicStrip />
       </main>
+    </>
+  );
 
-      <footer className="site-footer">
-        <p>&copy; {new Date().getFullYear()} Degen Monk. All rights reserved.</p>
-        <nav aria-label="Social media links">
-          <a href="https://twitter.com/degenmonk" target="_blank" rel="noopener noreferrer">Twitter</a>
-          <a href="https://t.me/degenmonk" target="_blank" rel="noopener noreferrer">Telegram</a>
-          <a href="https://discord.gg/degenmonk" target="_blank" rel="noopener noreferrer">Discord</a>
-        </nav>
-      </footer>
-    </div>
+  return (
+    <BrowserRouter>
+      <div className="App">
+        <Routes>
+          <Route path="/math-ai" element={<MathAI />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+        <footer className="site-footer">
+          <p>&copy; {new Date().getFullYear()} Degen Monk. All rights reserved.</p>
+          <nav aria-label="Social media links">
+            <a href="https://twitter.com/degenmonk" target="_blank" rel="noopener noreferrer">Twitter</a>
+            <a href="https://t.me/degenmonk" target="_blank" rel="noopener noreferrer">Telegram</a>
+            <a href="https://discord.gg/degenmonk" target="_blank" rel="noopener noreferrer">Discord</a>
+            <Link to="/math-ai" style={{ marginLeft: '1rem', fontWeight: 'bold', color: '#2980b9' }}>Math AI</Link>
+          </nav>
+        </footer>
+      </div>
+    </BrowserRouter>
   );
 }
 
