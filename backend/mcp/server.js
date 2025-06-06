@@ -351,29 +351,29 @@ app.get('/mcp/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Debug: Print all registered routes
+// Debug: Print all registered routes with more detail
 function printRoutes(app) {
-    const routes = [];
-    app._router.stack.forEach(middleware => {
-        if (middleware.route) {
-            // Routes registered directly on the app
-            routes.push({
-                path: middleware.route.path,
-                methods: Object.keys(middleware.route.methods)
-            });
-        } else if (middleware.name === 'router') {
-            // Router middleware
-            middleware.handle.stack.forEach(handler => {
-                if (handler.route) {
-                    routes.push({
-                        path: handler.route.path,
-                        methods: Object.keys(handler.route.methods)
-                    });
-                }
+    console.log('=== Route Registration Debug ===');
+    app._router.stack.forEach((middleware, i) => {
+        console.log(`\nMiddleware ${i}:`, {
+            name: middleware.name,
+            regexp: middleware.regexp?.toString(),
+            path: middleware.route?.path,
+            methods: middleware.route?.methods
+        });
+        
+        if (middleware.name === 'router') {
+            console.log('Router middleware stack:');
+            middleware.handle.stack.forEach((handler, j) => {
+                console.log(`  Handler ${j}:`, {
+                    name: handler.name,
+                    regexp: handler.regexp?.toString(),
+                    path: handler.route?.path,
+                    methods: handler.route?.methods
+                });
             });
         }
     });
-    console.log('Registered routes:', JSON.stringify(routes, null, 2));
 }
 
 // Start server
