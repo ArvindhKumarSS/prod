@@ -6,8 +6,8 @@ WORKDIR /app
 # Install app dependencies
 COPY package*.json ./
 
-# Use npm ci for more reliable dependency installation
-RUN npm ci --no-package-lock
+# Clean install with exact versions
+RUN npm install --no-package-lock --omit=dev
 
 # Bundle app source
 COPY . .
