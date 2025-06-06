@@ -336,8 +336,8 @@ app.use('/mcp', apiRouter);
 // Serve static files at /mcp
 app.use('/mcp', express.static(path.join(__dirname, 'public')));
 
-// SPA fallback for /mcp
-app.get('/mcp/*', (req, res) => {
+// SPA fallback for /mcp (using a catch-all route with a named parameter)
+app.get('/mcp/:path(*)', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
