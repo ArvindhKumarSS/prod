@@ -30,7 +30,25 @@ app.use(basicAuth({
 
 const apiRouter = express.Router();
 
-// Move all API endpoints to apiRouter
+// Serve static files through the router FIRST
+apiRouter.use(express.static(path.join(__dirname, 'public')));
+
+// SPA fallback - handle any unmatched routes in the router
+apiRouter.use((req, res, next) => {
+    // Skip if the request is for an API endpoint
+    if (req.path.startsWith('/metrics/') || 
+        req.path.startsWith('/query/') || 
+        req.path === '/health' || 
+        req.path === '/stats' || 
+        req.path === '/quotes' || 
+        req.path === '/visitorinfo' || 
+        req.path === '/errorinfo') {
+        return next();
+    }
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Move all API endpoints to apiRouter AFTER static and SPA middleware
 apiRouter.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
@@ -328,14 +346,6 @@ apiRouter.get('/query/history', async (req, res) => {
         console.error('Error fetching query history:', error);
         res.status(500).json({ error: 'Failed to fetch query history' });
     }
-});
-
-// Serve static files through the router
-apiRouter.use(express.static(path.join(__dirname, 'public')));
-
-// SPA fallback - handle any unmatched routes in the router
-apiRouter.use((req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Mount everything under /mcp
