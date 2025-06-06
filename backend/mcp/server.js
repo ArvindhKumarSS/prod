@@ -160,7 +160,7 @@ app.post('/mcp/api/quotes', async (req, res) => {
     }
 });
 
-app.delete('/mcp/api/quotes/:id', async (req, res) => {
+app.delete('/mcp/api/quotes/delete/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM quotes WHERE id = $1', [req.params.id]);
         res.json({ message: 'Quote deleted successfully' });
