@@ -5,10 +5,16 @@ const { logError } = require('./utils/errorLogger');
 const { pool } = require('./db');
 const fs = require('fs');
 const path = require('path');
+const OpenAI = require('openai');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+});
 
 app.use(cors());
 app.use(express.json());
@@ -72,6 +78,42 @@ app.get('/api/health', async (req, res) => {
     } catch (error) {
         await logError('/api/health', error, req);
         res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+// Math AI endpoint
+app.post('/api/math-gen', async (req, res) => {
+    const { query } = req.body;
+    
+    try {
+        // Get AI to generate math solution
+        const completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are a math expert. Help solve math problems and explain the solution step by step.
+                    Rules:
+                    1. Always show your work
+                    2. Use LaTeX notation for math expressions (wrapped in $ or $$)
+                    3. Explain each step clearly
+                    4. If the query is not math-related, politely say so
+                    5. Keep explanations concise but thorough`
+                },
+                {
+                    role: "user",
+                    content: query
+                }
+            ],
+            temperature: 0.3,
+            max_tokens: 1000
+        });
+
+        const solution = completion.choices[0].message.content;
+        res.json({ solution });
+    } catch (error) {
+        console.error('Error generating math solution:', error);
+        res.status(500).json({ error: 'Failed to generate math solution' });
     }
 });
 
