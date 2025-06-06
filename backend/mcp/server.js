@@ -28,13 +28,13 @@ app.use(basicAuth({
     realm: 'Degen Monk MCP'
 }));
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+const apiRouter = express.Router();
+
+// Move all API endpoints to apiRouter
+apiRouter.get('/health', (req, res) => {
     res.json({ status: 'ok' });
 });
-
-// Database performance metrics
-app.get('/metrics/performance', async (req, res) => {
+apiRouter.get('/metrics/performance', async (req, res) => {
     try {
         const metrics = await pool.query(`
             SELECT 
@@ -58,9 +58,7 @@ app.get('/metrics/performance', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch performance metrics' });
     }
 });
-
-// Table statistics
-app.get('/metrics/tables', async (req, res) => {
+apiRouter.get('/metrics/tables', async (req, res) => {
     try {
         const tables = await pool.query(`
             SELECT 
@@ -81,9 +79,7 @@ app.get('/metrics/tables', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch table statistics' });
     }
 });
-
-// Connection pool status
-app.get('/metrics/pool', (req, res) => {
+apiRouter.get('/metrics/pool', (req, res) => {
     const poolStatus = {
         totalCount: pool.totalCount,
         idleCount: pool.idleCount,
@@ -93,9 +89,7 @@ app.get('/metrics/pool', (req, res) => {
     };
     res.json(poolStatus);
 });
-
-// Slow queries (last hour)
-app.get('/metrics/slow-queries', async (req, res) => {
+apiRouter.get('/metrics/slow-queries', async (req, res) => {
     try {
         const slowQueries = await pool.query(`
             SELECT 
@@ -116,9 +110,7 @@ app.get('/metrics/slow-queries', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch slow queries' });
     }
 });
-
-// Database stats endpoint
-app.get('/stats', async (req, res) => {
+apiRouter.get('/stats', async (req, res) => {
     try {
         const stats = await pool.query(`
             SELECT 
@@ -134,9 +126,7 @@ app.get('/stats', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch database stats' });
     }
 });
-
-// Quotes management endpoints
-app.get('/quotes', (req, res) => {
+apiRouter.get('/quotes', (req, res) => {
   const query = `
     SELECT id, text, author, created_at, updated_at FROM quotes ORDER BY RANDOM() LIMIT 10
   `;
@@ -149,8 +139,7 @@ app.get('/quotes', (req, res) => {
     }
   });
 });
-
-app.post('/quotes', async (req, res) => {
+apiRouter.post('/quotes', async (req, res) => {
     const { text, author } = req.body;
     try {
         const result = await pool.query(
@@ -163,8 +152,7 @@ app.post('/quotes', async (req, res) => {
         res.status(500).json({ error: 'Failed to create quote' });
     }
 });
-
-app.delete('/quotes/:id', async (req, res) => {
+apiRouter.delete('/quotes/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM quotes WHERE id = $1', [req.params.id]);
         res.json({ message: 'Quote deleted successfully' });
@@ -173,9 +161,7 @@ app.delete('/quotes/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete quote' });
     }
 });
-
-// Visitor info endpoints (updated to match actual visitorinfo table schema: ip_address, region, data (json), created_at)
-app.get('/visitorinfo', async (req, res) => {
+apiRouter.get('/visitorinfo', async (req, res) => {
     try {
         const visitors = await pool.query('SELECT ip_address, region, data, created_at FROM visitorinfo ORDER BY created_at DESC LIMIT 100');
         res.json(visitors.rows);
@@ -184,8 +170,7 @@ app.get('/visitorinfo', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch visitor info' });
     }
 });
-
-app.post('/visitorinfo', async (req, res) => {
+apiRouter.post('/visitorinfo', async (req, res) => {
     const { ip_address, region, data } = req.body;
     try {
         await pool.query(
@@ -198,9 +183,7 @@ app.post('/visitorinfo', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-
-// Error info endpoints (updated to match actual errorinfo table schema: route, error_message, stack_trace, created_at)
-app.get('/errorinfo', async (req, res) => {
+apiRouter.get('/errorinfo', async (req, res) => {
     try {
         const errors = await pool.query('SELECT route, error_message, stack_trace, created_at FROM errorinfo ORDER BY created_at DESC LIMIT 100');
         res.json(errors.rows);
@@ -209,8 +192,7 @@ app.get('/errorinfo', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch error info' });
     }
 });
-
-app.post('/errorinfo', async (req, res) => {
+apiRouter.post('/errorinfo', async (req, res) => {
     const { route, error_message, stack_trace } = req.body;
     try {
         await pool.query(
@@ -246,8 +228,7 @@ Tables in the database:
    - created_at (timestamp)
 `;
 
-// Natural language query endpoint
-app.post('/query/natural', async (req, res) => {
+apiRouter.post('/query/natural', async (req, res) => {
     const { query, context } = req.body;
     
     try {
@@ -330,8 +311,7 @@ app.post('/query/natural', async (req, res) => {
     }
 });
 
-// Query history endpoint
-app.get('/query/history', async (req, res) => {
+apiRouter.get('/query/history', async (req, res) => {
     try {
         const history = await pool.query(`
             SELECT 
@@ -350,11 +330,16 @@ app.get('/query/history', async (req, res) => {
     }
 });
 
-// Serve static files at /mcp (so /mcp/* is handled by static middleware)
+// Mount the API router at /mcp
+app.use('/mcp', apiRouter);
+
+// Serve static files at /mcp
 app.use('/mcp', express.static(path.join(__dirname, 'public')));
 
-// Serve index.html at /mcp (instead of a catch-all route)
-app.get('/mcp', (req, res) => { res.sendFile(path.join(__dirname, 'public', 'index.html')); });
+// SPA fallback for /mcp
+app.get('/mcp/*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Start server
 app.listen(PORT, () => {
