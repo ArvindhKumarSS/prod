@@ -330,16 +330,16 @@ apiRouter.get('/query/history', async (req, res) => {
     }
 });
 
-// Mount the API router at /mcp
-app.use('/mcp', apiRouter);
+// Serve static files through the router
+apiRouter.use(express.static(path.join(__dirname, 'public')));
 
-// Serve static files at /mcp
-app.use('/mcp', express.static(path.join(__dirname, 'public')));
-
-// Simple catch-all route for SPA - this is the only route pattern that works reliably
-app.all('/mcp/*', (req, res) => {
+// SPA fallback - handle any unmatched routes in the router
+apiRouter.use((req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Mount everything under /mcp
+app.use('/mcp', apiRouter);
 
 // Start server
 app.listen(PORT, () => {
