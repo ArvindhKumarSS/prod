@@ -83,10 +83,23 @@ app.get('/api/health', async (req, res) => {
 
 // Math AI endpoint
 app.post('/api/math-gen', async (req, res) => {
+    console.log('Math-gen endpoint hit:', {
+        method: req.method,
+        path: req.path,
+        body: req.body,
+        headers: req.headers,
+        ip: req.ip
+    });
+    
     const { query } = req.body;
+    if (!query) {
+        console.error('No query provided in request body');
+        return res.status(400).json({ error: 'Query is required' });
+    }
     
     try {
         // Get AI to generate math solution
+        console.log('Calling OpenAI with query:', query);
         const completion = await openai.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
@@ -110,6 +123,7 @@ app.post('/api/math-gen', async (req, res) => {
         });
 
         const solution = completion.choices[0].message.content;
+        console.log('OpenAI response received, length:', solution.length);
         res.json({ solution });
     } catch (error) {
         console.error('Error generating math solution:', error);
