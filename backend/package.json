@@ -17,6 +17,7 @@
     "geoip-lite": "^1.4.10",
     "marked": "^15.0.11",
     "openai": "^4.100.0",
+    "path-to-regexp": "6.2.1",
     "pg": "^8.15.6",
     "useragent": "^2.3.0"
   }
