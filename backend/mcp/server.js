@@ -27,10 +27,10 @@ app.use(basicAuth({
     realm: 'Degen Monk MCP'
 }));
 
-// Serve static files first
+// Serve static files
 app.use('/mcp', express.static(path.join(__dirname, 'public')));
 
-// API Routes
+// API Routes with /mcp prefix
 app.get('/mcp/health', (req, res) => {
     res.json({ status: 'ok' });
 });
@@ -342,7 +342,7 @@ app.get('/mcp/query/history', async (req, res) => {
     }
 });
 
-// SPA fallback - must be last
+// Serve index.html at /mcp
 app.get('/mcp', (req, res) => {
     res.redirect('/mcp/');
 });
