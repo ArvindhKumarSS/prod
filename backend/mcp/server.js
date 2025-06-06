@@ -17,7 +17,6 @@ const openai = new OpenAI({
 // Middleware
 app.use(cors());
 app.use(express.json());
-// app.use(express.static(path.join(__dirname, 'public')));
 
 // Basic authentication middleware
 app.use(basicAuth({
@@ -28,31 +27,15 @@ app.use(basicAuth({
     realm: 'Degen Monk MCP'
 }));
 
-const apiRouter = express.Router();
+// Serve static files first
+app.use('/mcp', express.static(path.join(__dirname, 'public')));
 
-// Serve static files through the router FIRST
-apiRouter.use(express.static(path.join(__dirname, 'public')));
-
-// SPA fallback - handle any unmatched routes in the router
-apiRouter.use((req, res, next) => {
-    // Skip if the request is for an API endpoint
-    if (req.path.startsWith('/metrics/') || 
-        req.path.startsWith('/query/') || 
-        req.path === '/health' || 
-        req.path === '/stats' || 
-        req.path === '/quotes' || 
-        req.path === '/visitorinfo' || 
-        req.path === '/errorinfo') {
-        return next();
-    }
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Move all API endpoints to apiRouter AFTER static and SPA middleware
-apiRouter.get('/health', (req, res) => {
+// API Routes
+app.get('/mcp/health', (req, res) => {
     res.json({ status: 'ok' });
 });
-apiRouter.get('/metrics/performance', async (req, res) => {
+
+app.get('/mcp/metrics/performance', async (req, res) => {
     try {
         const metrics = await pool.query(`
             SELECT 
@@ -76,7 +59,8 @@ apiRouter.get('/metrics/performance', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch performance metrics' });
     }
 });
-apiRouter.get('/metrics/tables', async (req, res) => {
+
+app.get('/mcp/metrics/tables', async (req, res) => {
     try {
         const tables = await pool.query(`
             SELECT 
@@ -97,7 +81,8 @@ apiRouter.get('/metrics/tables', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch table statistics' });
     }
 });
-apiRouter.get('/metrics/pool', (req, res) => {
+
+app.get('/mcp/metrics/pool', (req, res) => {
     const poolStatus = {
         totalCount: pool.totalCount,
         idleCount: pool.idleCount,
@@ -107,7 +92,8 @@ apiRouter.get('/metrics/pool', (req, res) => {
     };
     res.json(poolStatus);
 });
-apiRouter.get('/metrics/slow-queries', async (req, res) => {
+
+app.get('/mcp/metrics/slow-queries', async (req, res) => {
     try {
         const slowQueries = await pool.query(`
             SELECT 
@@ -128,7 +114,8 @@ apiRouter.get('/metrics/slow-queries', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch slow queries' });
     }
 });
-apiRouter.get('/stats', async (req, res) => {
+
+app.get('/mcp/stats', async (req, res) => {
     try {
         const stats = await pool.query(`
             SELECT 
@@ -144,7 +131,8 @@ apiRouter.get('/stats', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch database stats' });
     }
 });
-apiRouter.get('/quotes', (req, res) => {
+
+app.get('/mcp/quotes', (req, res) => {
   const query = `
     SELECT id, text, author, created_at, updated_at FROM quotes ORDER BY RANDOM() LIMIT 10
   `;
@@ -157,7 +145,8 @@ apiRouter.get('/quotes', (req, res) => {
     }
   });
 });
-apiRouter.post('/quotes', async (req, res) => {
+
+app.post('/mcp/quotes', async (req, res) => {
     const { text, author } = req.body;
     try {
         const result = await pool.query(
@@ -170,7 +159,8 @@ apiRouter.post('/quotes', async (req, res) => {
         res.status(500).json({ error: 'Failed to create quote' });
     }
 });
-apiRouter.delete('/quotes/:id', async (req, res) => {
+
+app.delete('/mcp/quotes/:id', async (req, res) => {
     try {
         await pool.query('DELETE FROM quotes WHERE id = $1', [req.params.id]);
         res.json({ message: 'Quote deleted successfully' });
@@ -179,7 +169,8 @@ apiRouter.delete('/quotes/:id', async (req, res) => {
         res.status(500).json({ error: 'Failed to delete quote' });
     }
 });
-apiRouter.get('/visitorinfo', async (req, res) => {
+
+app.get('/mcp/visitorinfo', async (req, res) => {
     try {
         const visitors = await pool.query('SELECT ip_address, region, data, created_at FROM visitorinfo ORDER BY created_at DESC LIMIT 100');
         res.json(visitors.rows);
@@ -188,7 +179,8 @@ apiRouter.get('/visitorinfo', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch visitor info' });
     }
 });
-apiRouter.post('/visitorinfo', async (req, res) => {
+
+app.post('/mcp/visitorinfo', async (req, res) => {
     const { ip_address, region, data } = req.body;
     try {
         await pool.query(
@@ -201,7 +193,8 @@ apiRouter.post('/visitorinfo', async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
-apiRouter.get('/errorinfo', async (req, res) => {
+
+app.get('/mcp/errorinfo', async (req, res) => {
     try {
         const errors = await pool.query('SELECT route, error_message, stack_trace, created_at FROM errorinfo ORDER BY created_at DESC LIMIT 100');
         res.json(errors.rows);
@@ -210,7 +203,8 @@ apiRouter.get('/errorinfo', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch error info' });
     }
 });
-apiRouter.post('/errorinfo', async (req, res) => {
+
+app.post('/mcp/errorinfo', async (req, res) => {
     const { route, error_message, stack_trace } = req.body;
     try {
         await pool.query(
@@ -246,7 +240,7 @@ Tables in the database:
    - created_at (timestamp)
 `;
 
-apiRouter.post('/query/natural', async (req, res) => {
+app.post('/mcp/query/natural', async (req, res) => {
     const { query, context } = req.body;
     
     try {
@@ -329,7 +323,7 @@ apiRouter.post('/query/natural', async (req, res) => {
     }
 });
 
-apiRouter.get('/query/history', async (req, res) => {
+app.get('/mcp/query/history', async (req, res) => {
     try {
         const history = await pool.query(`
             SELECT 
@@ -348,8 +342,14 @@ apiRouter.get('/query/history', async (req, res) => {
     }
 });
 
-// Mount everything under /mcp
-app.use('/mcp', apiRouter);
+// SPA fallback - must be last
+app.get('/mcp', (req, res) => {
+    res.redirect('/mcp/');
+});
+
+app.get('/mcp/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 // Start server
 app.listen(PORT, () => {
