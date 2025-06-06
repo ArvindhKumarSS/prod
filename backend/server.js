@@ -24,6 +24,9 @@ const customOpenaiClient = new OpenAI({
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
 // Initialize database
 const initDb = async () => {
     try {
@@ -138,6 +141,16 @@ app.post('/api/math-gen', async (req, res) => {
         console.error('Error generating math solution:', error);
         res.status(500).json({ error: 'Failed to generate math solution' });
     }
+});
+
+// After all your API routes, add this catch-all route
+app.get('*', (req, res) => {
+    // Don't serve index.html for API routes
+    if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+    }
+    // Serve index.html for all other routes
+    res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
 });
 
 // Error handling middleware
