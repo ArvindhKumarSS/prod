@@ -107,13 +107,15 @@ app.post('/api/math-gen', async (req, res) => {
 
     // Select the appropriate client based on the model
     const client = model === 'custom' ? customOpenaiClient : openaiClient;
+    const mname = model  === 'custom' ? 'Qwen/Qwen2.5-Math-7B-Instruct' : 'gpt-3.5-turbo';
+
     console.log(`Using ${model} model for request`);
     
     try {
         // Get AI to generate math solution
         console.log('Calling OpenAI with query:', query);
         const completion = await client.chat.completions.create({
-            model: "gpt-3.5-turbo",
+            model: mname,
             messages: [
                 {
                     role: "system",
