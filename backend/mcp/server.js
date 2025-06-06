@@ -351,7 +351,33 @@ app.get('/mcp/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Debug: Print all registered routes
+function printRoutes(app) {
+    const routes = [];
+    app._router.stack.forEach(middleware => {
+        if (middleware.route) {
+            // Routes registered directly on the app
+            routes.push({
+                path: middleware.route.path,
+                methods: Object.keys(middleware.route.methods)
+            });
+        } else if (middleware.name === 'router') {
+            // Router middleware
+            middleware.handle.stack.forEach(handler => {
+                if (handler.route) {
+                    routes.push({
+                        path: handler.route.path,
+                        methods: Object.keys(handler.route.methods)
+                    });
+                }
+            });
+        }
+    });
+    console.log('Registered routes:', JSON.stringify(routes, null, 2));
+}
+
 // Start server
 app.listen(PORT, () => {
     console.log(`MCP server running on port ${PORT}`);
+    printRoutes(app);
 }); 
