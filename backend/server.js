@@ -121,11 +121,7 @@ app.post('/api/math-gen', async (req, res) => {
                     role: "system",
                     content: `You are a math expert. Help solve math problems and explain the solution step by step.
                     Rules:
-                    1. Always show your work
-                    2. Use LaTeX notation for math expressions (wrapped in $ or $$)
-                    3. Explain each step clearly
-                    4. If the query is not math-related, politely say so
-                    5. Keep explanations concise but thorough`
+                    1. If the query is not math-related, politely say so. `
                 },
                 {
                     role: "user",
