@@ -6,8 +6,8 @@ WORKDIR /app
 # Install app dependencies
 COPY package*.json ./
 
-# Clean install with exact versions
-RUN npm install --no-package-lock --omit=dev --legacy-peer-deps
+# Force install with exact versions
+RUN npm install --no-package-lock --omit=dev --legacy-peer-deps --force
 
 # Bundle app source
 COPY . .
