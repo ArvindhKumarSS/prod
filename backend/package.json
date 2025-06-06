@@ -23,6 +23,12 @@
     "useragent": "2.3.0"
   },
   "resolutions": {
+    "express": "4.18.2",
     "path-to-regexp": "6.2.1"
+  },
+  "overrides": {
+    "express": {
+      "path-to-regexp": "6.2.1"
+    }
   }
 }
