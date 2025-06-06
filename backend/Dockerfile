@@ -4,10 +4,10 @@ FROM node:23.11.0
 WORKDIR /app
 
 # Install app dependencies
-COPY package*.json npm-shrinkwrap.json ./
+COPY package*.json ./
 
-# Use npm ci to install exact versions from npm-shrinkwrap.json
-RUN npm ci --omit=dev
+# Clean install with exact versions
+RUN npm install --no-package-lock --omit=dev --legacy-peer-deps
 
 # Bundle app source
 COPY . .
