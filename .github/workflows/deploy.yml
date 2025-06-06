@@ -87,6 +87,7 @@ jobs:
             -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
             -e DB_PORT=5432 \
             -e PORT=3001 \
+            -e OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} \
             307946674359.dkr.ecr.us-east-1.amazonaws.com/prod-backend:latest || echo "Backend run failed"
           echo "Running MCP container:"
           docker run -d -p 3002:3002 --name mcp \
