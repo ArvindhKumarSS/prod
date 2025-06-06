@@ -10,11 +10,14 @@ function App() {
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const getApiUrl = () => {
-    const protocol = window.location.protocol;
+  function getApiUrl() {
     const hostname = window.location.hostname;
-    return `${protocol}//${hostname}/api`;
-  };
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return 'http://localhost:3001/api';
+    } else {
+      return window.location.protocol + '//' + window.location.host + '/api';
+    }
+  }
 
   useEffect(() => {
     const apiUrl = getApiUrl();
