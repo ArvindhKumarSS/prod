@@ -311,7 +311,7 @@
         // Fetch and display stats
         async function updateStats() {
             try {
-                const response = await fetch('/stats');
+                const response = await fetch('/mcp/stats');
                 const stats = await response.json();
                 
                 document.getElementById('quotesCount').textContent = stats.quotes_count;
@@ -326,7 +326,7 @@
         // Fetch and display quotes
         async function updateQuotes() {
             try {
-                const response = await fetch('/quotes');
+                const response = await fetch('/mcp/quotes');
                 const quotes = await response.json();
                 
                 const tbody = document.querySelector('#quotesTable tbody');
@@ -347,7 +347,7 @@
         // Fetch and display visitors
         async function updateVisitors() {
             try {
-                const response = await fetch('/visitors');
+                const response = await fetch('/mcp/visitorinfo');
                 const visitors = await response.json();
                 
                 const tbody = document.querySelector('#visitorsTable tbody');
@@ -367,7 +367,7 @@
         async function updateMetrics() {
             try {
                 // Performance metrics
-                const perfResponse = await fetch('/metrics/performance');
+                const perfResponse = await fetch('/mcp/metrics/performance');
                 const perfMetrics = await perfResponse.json();
                 
                 document.getElementById('activeConnections').textContent = perfMetrics.active_connections;
@@ -377,7 +377,7 @@
                 document.getElementById('blocksHit').textContent = perfMetrics.blocks_hit;
 
                 // Pool status
-                const poolResponse = await fetch('/metrics/pool');
+                const poolResponse = await fetch('/mcp/metrics/pool');
                 const poolMetrics = await poolResponse.json();
                 
                 document.getElementById('totalConnections').textContent = poolMetrics.totalCount;
@@ -387,7 +387,7 @@
                 document.getElementById('minConnections').textContent = poolMetrics.min;
 
                 // Table statistics
-                const tablesResponse = await fetch('/metrics/tables');
+                const tablesResponse = await fetch('/mcp/metrics/tables');
                 const tables = await tablesResponse.json();
                 
                 const tablesBody = document.querySelector('#tablesTable tbody');
@@ -402,7 +402,7 @@
                 `).join('');
 
                 // Slow queries
-                const slowQueriesResponse = await fetch('/metrics/slow-queries');
+                const slowQueriesResponse = await fetch('/mcp/metrics/slow-queries');
                 const slowQueries = await slowQueriesResponse.json();
                 
                 const slowQueriesBody = document.querySelector('#slowQueriesTable tbody');
@@ -427,7 +427,7 @@
             const author = document.getElementById('quoteAuthor').value;
 
             try {
-                await fetch('/quotes', {
+                await fetch('/mcp/quotes', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ text, author })
@@ -446,7 +446,7 @@
             if (!confirm('Are you sure you want to delete this quote?')) return;
 
             try {
-                await fetch(`/quotes/${id}`, { method: 'DELETE' });
+                await fetch(`/mcp/quotes/${id}`, { method: 'DELETE' });
                 updateQuotes();
                 updateStats();
             } catch (error) {
@@ -461,7 +461,7 @@
             const context = document.getElementById('queryContext').value;
 
             try {
-                const response = await fetch('/query/natural', {
+                const response = await fetch('/mcp/query/natural', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ query, context })
@@ -524,7 +524,7 @@
         // Update query history
         async function updateQueryHistory() {
             try {
-                const response = await fetch('/query/history');
+                const response = await fetch('/mcp/query/history');
                 const history = await response.json();
                 
                 const tbody = document.querySelector('#queryHistoryTable tbody');
