@@ -11,9 +11,14 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3001;
 
-// Initialize OpenAI client
-const openai = new OpenAI({
+// Initialize OpenAI clients
+const openaiClient = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
+});
+
+const customOpenaiClient = new OpenAI({
+    apiKey: process.env.CUSTOM_OPENAI_API_KEY,
+    baseURL: process.env.CUSTOM_OPENAI_BASE_URL
 });
 
 app.use(cors());
@@ -91,16 +96,20 @@ app.post('/api/math-gen', async (req, res) => {
         ip: req.ip
     });
     
-    const { query } = req.body;
+    const { query, model = 'openai' } = req.body;
     if (!query) {
         console.error('No query provided in request body');
         return res.status(400).json({ error: 'Query is required' });
     }
+
+    // Select the appropriate client based on the model
+    const client = model === 'custom' ? customOpenaiClient : openaiClient;
+    console.log(`Using ${model} model for request`);
     
     try {
         // Get AI to generate math solution
         console.log('Calling OpenAI with query:', query);
-        const completion = await openai.chat.completions.create({
+        const completion = await client.chat.completions.create({
             model: "gpt-3.5-turbo",
             messages: [
                 {
@@ -137,6 +146,25 @@ app.use(async (err, req, res, next) => {
     res.status(500).json({ error: 'Internal server error' });
 });
 
+// Debug: Print all registered routes
+function printRoutes(app) {
+    console.log('=== Registered Routes ===');
+    app._router.stack.forEach((middleware) => {
+        if (middleware.route) {
+            // Routes registered directly on the app
+            console.log(`${Object.keys(middleware.route.methods).join(',').toUpperCase()} ${middleware.route.path}`);
+        } else if (middleware.name === 'router') {
+            // Router middleware
+            middleware.handle.stack.forEach((handler) => {
+                if (handler.route) {
+                    console.log(`${Object.keys(handler.route.methods).join(',').toUpperCase()} ${handler.route.path}`);
+                }
+            });
+        }
+    });
+}
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
+    printRoutes(app);  // Print routes on startup
 }); 

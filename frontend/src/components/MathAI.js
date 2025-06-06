@@ -4,12 +4,14 @@ import DOMPurify from 'dompurify';
 import 'katex/dist/katex.min.css';
 import { InlineMath, BlockMath } from 'react-katex';
 import './MathAI.css';
+import axios from 'axios';
 
 const MathAI = () => {
     const [query, setQuery] = useState('');
     const [solution, setSolution] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [selectedModel, setSelectedModel] = useState('openai'); // Default to OpenAI
 
     function getApiUrl() {
         const hostname = window.location.hostname;
@@ -24,25 +26,16 @@ const MathAI = () => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        
+        setSolution('');
+
         try {
-            const apiUrl = getApiUrl();
-            const response = await fetch(`${apiUrl}/math-gen`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query }),
+            const response = await axios.post('/api/math-gen', {
+                query,
+                model: selectedModel // Include the selected model in the payload
             });
-            
-            const data = await response.json();
-            if (data.error) {
-                setError(data.error);
-            } else {
-                setSolution(data.solution);
-            }
+            setSolution(response.data.solution);
         } catch (err) {
-            setError('Failed to get solution. Please try again.');
+            setError(err.response?.data?.error || 'Failed to generate solution');
         } finally {
             setLoading(false);
         }
@@ -81,23 +74,50 @@ const MathAI = () => {
                 <p className="subtitle">Your personal mathematics tutor</p>
             </div>
             
-            <form onSubmit={handleSubmit} className="math-form">
+            <form className="math-form" onSubmit={handleSubmit}>
                 <div className="input-container">
                     <textarea
+                        className="math-input"
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
-                        placeholder="Ask any math question... (e.g., 'Solve the quadratic equation x² + 5x + 6 = 0')"
-                        className="math-input"
-                        rows="4"
+                        placeholder="Enter your math problem here..."
+                        required
                     />
                 </div>
-                
+
+                <div className="model-selection">
+                    <label className="model-label">
+                        <input
+                            type="radio"
+                            name="model"
+                            value="openai"
+                            checked={selectedModel === 'openai'}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                        />
+                        OpenAI GPT-3.5
+                    </label>
+                    <label className="model-label">
+                        <input
+                            type="radio"
+                            name="model"
+                            value="custom"
+                            checked={selectedModel === 'custom'}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                        />
+                        Custom Model
+                    </label>
+                </div>
+
                 <button 
                     type="submit" 
                     className="submit-button"
-                    disabled={loading || !query.trim()}
+                    disabled={loading}
                 >
-                    {loading ? 'Solving...' : 'Solve'}
+                    {loading ? (
+                        <div className="math-ai-loading">∞</div>
+                    ) : (
+                        'Solve'
+                    )}
                 </button>
             </form>
 
@@ -114,10 +134,6 @@ const MathAI = () => {
                         {renderMath(solution)}
                     </div>
                 </div>
-            )}
-
-            {loading && (
-                <div className="math-ai-loading">∞</div>
             )}
         </div>
     );
